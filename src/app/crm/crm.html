@@ -1,0 +1,113 @@
+<div class="container my-4">
+  <h1 class="h3 mb-3">Mini CRM</h1>
+
+  <form [formGroup]="form" (ngSubmit)="register()" novalidate class="needs-validation">
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <label class="form-label">Įmonės pavadinimas <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="companyName"/>
+            <div class="form-text text-danger" *ngIf="control('companyName')?.touched && control('companyName')?.invalid">
+              <span *ngIf="control('companyName')?.errors?.['required']">Įmonės pavadinimas būtinas</span>
+              <span *ngIf="control('companyName')?.errors?.['minlength']">Min 2 simboliai.</span>
+              <span *ngIf="control('companyName')?.errors?.['maxlength']">Max 30 simbolių.</span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Įmonės kodas</label>
+            <input type="text" class="form-control" formControlName="companyCode" />
+            <div class="form-text text-danger" *ngIf="control('companyCode')?.touched && control('companyCode')?.invalid">
+              Tik skaičiai
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">PVM registracijos kodas</label>
+            <input type="text" class="form-control" formControlName="vatCode" />
+            <div class="form-text text-danger" *ngIf="control('vatCode')?.touched && control('vatCode')?.invalid">
+              Turi būti skaičiai, arba LT[skaičiai]
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Adresas</label>
+            <input type="text" class="form-control" formControlName="address" />
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Elektroninio pašto adresas <span class="text-danger">*</span></label>
+            <input type="email" class="form-control" formControlName="email" />
+            <div class="form-text text-danger" *ngIf="control('email')?.touched && control('email')?.invalid">
+              <span *ngIf="control('email')?.errors?.['required']">El. paštas būtinas</span>
+              <span *ngIf="control('email')?.errors?.['email']">El. paštas netinkamas</span>
+            </div>
+          </div>
+
+          <div class="col-md-6">
+            <label class="form-label">Telefono numeris</label>
+            <input type="tel" class="form-control" formControlName="phone" />
+            <div class="form-text text-danger" *ngIf="control('phone')?.touched && control('phone')?.invalid">
+              Formatas: "+" ženklas ir 10–12 skaičiai (pvz., +37065312345)
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-4">
+      <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <h2 class="h5 m-0">Kontaktas</h2>
+          <button type="button" class="btn btn-sm btn-outline-primary" (click)="addContact()">Pridėti kontaktą</button>
+        </div>
+
+        <div formArrayName="contacts" class="vstack gap-3">
+          <div class="border rounded p-3" *ngFor="let group of contacts.controls; let i = index" [formGroupName]="i">
+            <div class="row g-3 align-items-end">
+              <div class="col-md-3">
+                <label class="form-label">Vardas <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="firstName" />
+                <div class="form-text text-danger" *ngIf="contactControl(i,'firstName').touched && contactControl(i,'firstName').invalid">
+                  Būtinas
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Pavardė <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" formControlName="lastName" />
+                <div class="form-text text-danger" *ngIf="contactControl(i,'lastName').touched && contactControl(i,'lastName').invalid">
+                  Būtinas
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">Pareigos</label>
+                <input type="text" class="form-control" formControlName="position" />
+              </div>
+
+              <div class="col-md-2">
+                <label class="form-label">Telefono numeris</label>
+                <input type="tel" class="form-control" formControlName="phone" />
+                <div class="form-text text-danger" *ngIf="contactControl(i,'phone').touched && contactControl(i,'phone').invalid">
+                  "+" ženklas ir 10–12 skaičiai.
+                </div>
+              </div>
+
+              <div class="col-md-1 d-grid">
+                <button type="button" class="btn btn-outline-danger" (click)="removeContact(i)" [disabled]="contacts.length===1">
+                  &times;
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-grid gap-2 d-sm-flex justify-content-sm-end">
+      <button type="submit" class="btn btn-primary">Registruoti</button>
+    </div>
+  </form>
+</div>
