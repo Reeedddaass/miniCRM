@@ -1,5 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { CompanyService } from '../services/company';
+import { CompanyModel } from '../models/company';
+import { catchError, of, tap } from 'rxjs';
 import {
   FormArray,
   FormBuilder,
@@ -19,7 +22,13 @@ import {
 export class Crm {
   form: FormGroup;
 
-  constructor(private fb: FormBuilder) {
+  loading = true;
+  saving = false;
+  companies: any[] = [];
+  errorMsg: string | null = null;
+  successMsg: string | null = null;
+
+  constructor(private fb: FormBuilder, private CompanyService: CompanyService) {
     this.form = this.fb.group({
       companyName: this.fb.control('', [
         Validators.required,
@@ -35,16 +44,37 @@ export class Crm {
     });
   }
 
+  ngOnInit(): void {
+    this.loadCompanies();
+  }
+
+  loadCompanies(): void {
+    this.loading = true;
+    this.errorMsg = null;
+
+    this.CompanyService.getCompanies()
+      .pipe(
+        tap(() => this.loading = false),
+        catchError(err => {
+          console.error(err);
+          this.loading = false;
+          this.errorMsg = 'Nepavyko įkelti duomenų.';
+          return of([]);
+        })
+      )
+      .subscribe(data => this.companies = data);
+  }
+
   get contacts(): FormArray<FormGroup> {
     return this.form.get('contacts') as FormArray<FormGroup>;
   }
 
   createContactGroup(): FormGroup {
     return this.fb.group({
-      firstName: this.fb.control('', [Validators.required]),
-      lastName: this.fb.control('', [Validators.required]),
-      position: this.fb.control(null),
-      phone: this.fb.control(null, [Validators.pattern(/^\+\d{10,12}$/)]),
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      position: [null],
+      phone: [null, Validators.pattern(/^\+\d{10,12}$/)],
     });
   }
 
@@ -57,14 +87,36 @@ export class Crm {
   }
 
   register(): void {
-    if (this.form.valid) {
-      console.log('Company registration payload:', this.form.value);
-      this.form.reset();
-      this.contacts.clear();
-      this.addContact();
-    } else {
+    if (this.form.invalid) {
       this.form.markAllAsTouched();
+      return;
     }
+
+    this.saving = true;
+    this.successMsg = null;
+    this.errorMsg = null;
+
+    const data = this.form.value as CompanyModel;
+
+    this.CompanyService.addCompany(data)
+      .pipe(
+        tap(() => this.saving = false),
+        catchError(err => {
+          console.error(err);
+          this.saving = false;
+          this.errorMsg = 'Nepavyko išsaugoti duomenų';
+          return of(null);
+        })
+      )
+      .subscribe(result => {
+        if (!result) return;
+
+        this.successMsg = 'Įmonė sėkmingai išsaugota';
+        this.form.reset();
+        this.contacts.clear();
+        this.addContact();
+        this.loadCompanies();
+      });
   }
 
   control(path: string): AbstractControl | null {
@@ -79,7 +131,7 @@ export class Crm {
 export function vatCodeValidator() {
   const pattern = /^(LT)?\d+$/;
   return (control: AbstractControl): ValidationErrors | null => {
-    const value = control.value as string | null | undefined;
+    const value = control.value;
     if (!value) return null;
     return pattern.test(value) ? null : { vatFormat: true };
   };

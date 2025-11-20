@@ -1,3 +1,5 @@
+<div *ngIf="successMsg" class="alert alert-success">{{ successMsg }}</div>
+<div *ngIf="errorMsg" class="alert alert-danger">{{ errorMsg }}</div>
 <div class="container my-4">
   <h1 class="h3 mb-3">Mini CRM</h1>
 
@@ -110,4 +112,47 @@
       <button type="submit" class="btn btn-primary">Registruoti</button>
     </div>
   </form>
+
+  <hr />
+
+  <h4>Registruotos įmonės</h4>
+
+  <div *ngIf="loading" class="alert alert-info">
+    Kraunama...
+  </div>
+
+  <div *ngIf="!loading && companies.length === 0" class="text-muted">
+    Nėra duomenų.
+  </div>
+
+  <table *ngIf="!loading && companies.length > 0" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Pavadinimas</th>
+        <th>Kodas</th>
+        <th>PVM kodas</th>
+        <th>Adresas</th>
+        <th>El. paštas</th>
+        <th>Telefonas</th>
+        <th>Kontaktai</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let c of companies">
+        <td>{{ c.companyName }}</td>
+        <td>{{ c.companyCode || '—' }}</td>
+        <td>{{ c.vatCode || '—' }}</td>
+        <td>{{ c.address || '—' }}</td>
+        <td>{{ c.email }}</td>
+        <td>{{ c.phone || '—' }}</td>
+        <td>
+          <div *ngFor="let ct of c.contacts">
+            <strong>{{ ct.firstName }} {{ ct.lastName }}</strong>
+            <span *ngIf="ct.position"> ({{ ct.position }})</span><br>
+            <small *ngIf="ct.phone">{{ ct.phone }}</small>
+          </div>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </div>
